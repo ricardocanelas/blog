@@ -31,3 +31,7 @@ yarn-error.log*
 
 # ignore next-mdx-enhanced cache directory
 .mdx-data
+
+# others
+NOTE**.md
+TASK**.md
