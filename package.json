@@ -1,6 +1,6 @@
 {
   "name": "blog",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,5 +15,8 @@
     "next-mdx-enhanced": "^4.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1"
+    "postcss-flexbugs-fixes": "^4.2.1",
+    "postcss-preset-env": "^6.7.0",
+    "tailwindcss": "^1.8.9"
   }
 }
