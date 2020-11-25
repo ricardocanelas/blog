@@ -1,0 +1,109 @@
+---
+layout: post
+slug: use-effect-problem
+title: Use Effect Problem 1
+date: 2020-10-22
+language: en
+tags:
+  - javascript
+---
+
+Let's suppose you have a form. This form would save automatic each time that any field has change. Let's get the example below:
+
+```jsx
+import React, { useRef, useEffect, useState, useCallback } from "react";
+import axios from "axios";
+
+const ReportForm = ({ reportId }) => {
+  const lastRequest = useRef(0);
+  const [state, setState] = useState({
+    fields: {
+      title: "",
+      date: "2020-10-22",
+    },
+    saving: false,
+    error: null,
+  });
+
+  const handleChange = (field) => (event) => {
+    const value = event.target.value;
+    setState((prev) => ({
+      ...prev,
+      fields: { ...prev.fields, [field]: value },
+    }));
+  };
+
+  const saveForm = useCallback(() => {
+    console.log("[saveForm]");
+    const formData = state.fields;
+
+    setState((prev) => ({ ...prev, saving: true, error: null }));
+    lastRequest.current++;
+    const requestNumber = lastRequest.current;
+
+    axios
+      .post(`http://api.domain.com/v1/report/${reportId}`, formData)
+      .then((response) => {
+        if (lastRequest.current === requestNumber) {
+          setState((prev) => ({ ...prev, saving: false, error: null }));
+        }
+      })
+      .catch((error) => {
+        if (lastRequest.current === requestNumber) {
+          setState((prev) => ({ ...prev, saving: false, error: error }));
+        }
+      });
+  }, [state, reportId]);
+
+  useEffect(() => {
+    saveForm(); // Warning: Maximum update depth exceeded.
+  }, [saveForm, state.fields]);
+
+  return (
+    <form>
+      <input value={state.fields.title} onChange={handleChange("title")} />
+      <input value={state.fields.date} onChange={handleChange("date")} />
+    </form>
+  );
+};
+
+export default ReportForm;
+```
+
+You may get the error `Warning: Maximum update depth exceeded`. How can we resolve it with useEffect? We just need a new prop that we can check if we can call the saveForm method.
+
+```jsx
+const ReportForm = ({ reportId }) => {
+  const lastRequest = useRef(0);
+  const [state, setState] = useState({
+    //...
++   hasChanged: false,
+  });
+
+  const handleChange = (field) => (event) => {
+    const value = event.target.value;
+    setState((prev) => ({
+      ...prev,
++     hasChanged: true, // <--- trigger to save
+      fields: { ...prev.fields, [field]: value },
+    }));
+  };
+
+  const saveForm = useCallback(() => {
+    //...
+  }, [state, reportId]);)
+
+  useEffect(() => {
++   if (state.hasChanged) {
+      saveForm();
++     setState((prev) => ({ ...prev, hasChanged: false }));
++   }
+!  }, [setState, state, saveForm]);
+
+  return (
+    <div>....</div>
+  )
+};
+```
+
+With the props `hasChanged` we fixed our solution.
