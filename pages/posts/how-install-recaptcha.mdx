@@ -1,0 +1,71 @@
+---
+layout: post
+slug: how-install-recaptcha
+title: How install reCaptcha?
+date: 2020-09-14
+language: en
+tags:
+  - javascript
+---
+
+It's very simple to install the reCaptcha.
+
+First thing you need to create a key. Just go to https://www.google.com/recaptcha/admin/create.
+If you want to test on locally, then you may need to add the domain "localhost".
+
+In this example I will use reCAPTCHA v2, with "I'm not a robot" Checkbox.
+
+```html
+<form id="feedback-form" action="/send-feedback.php" method="POST">
+  <input type="text" name="firstname" />
+  <textarea name="message"></textarea>
+  <div id="recaptchaElement" className="g-recapactha"></div>
+  <button type="submit">Send</button>
+</form>
+```
+
+Now, we need to validate the form with reCAPTCHA.
+
+```html
+<script>
+  var verifiedCaptch = false;
+  var feedbackForm = document.getElementById("feedback-form");
+
+  var verifyCallback = function (response) {
+    verifiedCaptch = true;
+  };
+
+  var errorCallback = function () {
+    verifiedCaptch = false;
+  };
+
+  var onloadCallback = function () {
+    widgetId = grecaptcha.render("recaptchaElement", {
+      sitekey: "your_site_key",
+      callback: verifyCallback,
+      "error-callback": errorCallback,
+      "expired-callback": errorCallback,
+      size: "normal",
+    });
+  };
+
+  feedbackForm.addEventListener("submit", function (e) {
+    if (!verifiedCaptch) {
+      e.preventDefault();
+      // show the error message...
+    }
+  });
+</script>
+
+<script
+  src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+  async
+  defer
+></script>
+```
+
+In the backend, `send-feedback.php`
+
+```php
+
+```
